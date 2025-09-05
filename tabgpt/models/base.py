@@ -61,19 +61,39 @@ class TabGPTModel(TabGPTPreTrainedModel):
     def __init__(self, config: TabGPTConfig):
         super().__init__(config)
         
-        # Will be implemented in subsequent tasks
-        self.feature_tokenizer = None
-        self.column_encoder = None  
-        self.row_encoder = None
-        self.cross_attention = None
+        # Import here to avoid circular imports
+        from .row_encoder import RowEncoder
+        from .cross_attention import CrossAttentionFusion
+        from ..encoders import ColumnEncoder
+        
+        # Core components
+        self.row_encoder = RowEncoder(config)
+        self.column_encoder = ColumnEncoder(
+            embedding_dim=config.column_embedding_dim,
+            statistical_features=config.statistical_features
+        )
+        
+        # Cross-attention fusion
+        self.cross_attention = CrossAttentionFusion(
+            d_model=config.d_model,
+            n_heads=config.n_heads,
+            n_layers=getattr(config, 'cross_attention_layers', 2),
+            dropout=config.dropout,
+            fusion_strategy=getattr(config, 'fusion_strategy', 'gate')
+        )
         
         # Initialize weights
         self.init_weights()
     
     def init_weights(self) -> None:
         """Initialize model weights."""
-        # Will implement proper weight initialization
-        pass
+        # Initialize row encoder weights
+        if hasattr(self, 'row_encoder'):
+            self.row_encoder._init_weights()
+        
+        # Initialize column encoder weights  
+        if hasattr(self, 'column_encoder'):
+            self.column_encoder._init_weights()
     
     def forward(
         self,
@@ -93,11 +113,60 @@ class TabGPTModel(TabGPTPreTrainedModel):
         Returns:
             Dictionary containing model outputs
         """
-        # Placeholder implementation - will be completed in subsequent tasks
-        batch_size, n_features, _ = input_features.shape
+        # Process through row encoder
+        row_outputs = self.row_encoder(input_features, attention_mask)
+        row_embeddings = row_outputs["last_hidden_state"]
         
-        # Return dummy outputs for now
-        return {
-            "last_hidden_state": torch.zeros(batch_size, n_features, self.config.d_model),
-            "pooler_output": torch.zeros(batch_size, self.config.d_model),
-        }
+        # Column encoding (if metadata provided)
+        column_embeddings = None
+        if column_metadata is not None:
+            # Extract column embeddings from metadata
+            column_embeddings_list = self.column_encoder.encode_columns(
+                column_metadata.get('column_metadata', []),
+                column_metadata.get('dataframe', None)
+            )
+            column_embeddings = torch.stack([emb.combined_embedding for emb in column_embeddings_list])
+        
+        # Apply cross-attention fusion if column embeddings are available
+        if column_embeddings is not None:
+            fusion_outputs = self.cross_attention(
+                row_embeddings=row_embeddings,
+                column_embeddings=column_embeddings,
+                row_attention_mask=attention_mask,
+                return_attention_weights=kwargs.get('return_attention_weights', False)
+            )
+            
+            # Use fused representations as the final output
+            final_hidden_state = fusion_outputs['fused_representations']
+            
+            # Pool the fused representations
+            if attention_mask is not None:
+                # Masked mean pooling
+                mask = attention_mask.unsqueeze(-1).expand_as(final_hidden_state)
+                masked_hidden = final_hidden_state * mask.float()
+                sum_hidden = masked_hidden.sum(dim=1)
+                sum_mask = mask.float().sum(dim=1)
+                pooler_output = sum_hidden / (sum_mask + 1e-8)
+            else:
+                pooler_output = final_hidden_state.mean(dim=1)
+            
+            outputs = {
+                "last_hidden_state": final_hidden_state,
+                "pooler_output": pooler_output,
+                "row_embeddings": fusion_outputs['enhanced_row_embeddings'],
+                "column_embeddings": fusion_outputs['enhanced_column_embeddings'],
+            }
+            
+            # Add attention weights if requested
+            if kwargs.get('return_attention_weights', False):
+                outputs["attention_weights"] = fusion_outputs.get('attention_weights', [])
+                outputs["row_attention_weights"] = row_outputs.get("attention_weights", [])
+            
+            return outputs
+        else:
+            # No column metadata provided, return row encoder outputs only
+            return {
+                "last_hidden_state": row_embeddings,
+                "pooler_output": row_outputs["pooler_output"],
+                "attention_weights": row_outputs.get("attention_weights", []),
+            }

@@ -28,7 +28,15 @@ class TabGPTForClassification(TabGPTPreTrainedModel):
         )
         
         # Initialize weights
-        self.init_weights()
+        self._init_classifier_weights()
+    
+    def _init_classifier_weights(self):
+        """Initialize classifier weights."""
+        for module in self.classifier.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.xavier_uniform_(module.weight)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
     
     def forward(
         self,
