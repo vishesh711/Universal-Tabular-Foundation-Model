@@ -12,6 +12,7 @@ from .models import TabGPTModel, TabGPTForClassification, TabGPTForRegression
 from .tokenizers import TabularTokenizer
 from .encoders import ColumnEncoder, SemanticColumnEncoder
 from .config import TabGPTConfig
+from .training import MaskedCellModelingObjective
 
 __all__ = [
     "TabGPTModel",
@@ -21,4 +22,5 @@ __all__ = [
     "ColumnEncoder",
     "SemanticColumnEncoder",
     "TabGPTConfig",
+    "MaskedCellModelingObjective",
 ]

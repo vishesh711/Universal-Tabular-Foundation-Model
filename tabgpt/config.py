@@ -29,6 +29,15 @@ class TabGPTConfig:
     column_mask_probability: float = 0.2
     contrastive_temperature: float = 0.1
     
+    # Row encoder settings
+    use_positional_encoding: bool = False
+    pooling_strategy: str = 'cls'  # 'cls', 'mean', 'max'
+    
+    # Cross-attention fusion settings
+    cross_attention_layers: int = 2
+    fusion_strategy: str = 'gate'  # 'add', 'concat', 'gate'
+    cross_attention_temperature: float = 1.0
+    
     # Training settings
     learning_rate: float = 1e-4
     weight_decay: float = 0.01

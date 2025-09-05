@@ -23,7 +23,7 @@
   - Write tests for column metadata encoding and semantic similarity
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 4. Create FT-Transformer-based Row Encoder
+- [x] 4. Create FT-Transformer-based Row Encoder
   - Implement multi-head self-attention mechanism for tabular features
   - Add layer normalization and residual connections
   - Create positional encoding for feature ordering (optional for tabular data)
@@ -31,28 +31,28 @@
   - Write tests for attention patterns and gradient flow validation
   - _Requirements: 7.1, 7.4_
 
-- [ ] 5. Implement Cross-Attention Fusion mechanism
+- [x] 5. Implement Cross-Attention Fusion mechanism
   - Create bidirectional attention between row and column embeddings
   - Add residual connections to preserve original row representations
   - Implement attention weight visualization for interpretability
   - Write tests for fusion output dimensions and attention weight distributions
   - _Requirements: 7.3, 7.5_
 
-- [ ] 6. Develop Masked Cell Modeling pre-training objective
+- [x] 6. Develop Masked Cell Modeling pre-training objective
   - Implement random cell masking strategy with configurable mask probability
   - Create prediction heads for categorical (cross-entropy) and numerical (MSE) targets
   - Add loss computation and gradient accumulation for large batches
   - Write tests for masking logic and loss calculation accuracy
   - _Requirements: 3.1_
 
-- [ ] 7. Add Masked Column Modeling objective
+- [x] 7. Add Masked Column Modeling objective
   - Implement entire column masking with probability-based selection
   - Create column-level prediction from remaining features
   - Add multi-task loss combination with Masked Cell Modeling
   - Write tests for column masking patterns and prediction accuracy
   - _Requirements: 3.2_
 
-- [ ] 8. Implement Contrastive Row Learning
+- [-] 8. Implement Contrastive Row Learning
   - Create data augmentation strategies: noise injection, feature dropout, value perturbation
   - Implement InfoNCE loss with temperature scaling for contrastive learning
   - Add positive/negative pair generation for same-row augmentations
