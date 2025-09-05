@@ -175,7 +175,7 @@ class ColumnEncoder(nn.Module):
                 stats.get('skew', 0.0),
                 stats.get('kurtosis', 0.0),
                 metadata.missing_rate,
-                np.log1p(metadata.cardinality)  # Log cardinality
+                np.log1p(metadata.unique_values or 0)  # Log unique values
             ]
         else:
             # For non-numerical columns, use basic statistics
@@ -187,7 +187,7 @@ class ColumnEncoder(nn.Module):
                 0.0,  # skew (not applicable)
                 0.0,  # kurtosis (not applicable)
                 metadata.missing_rate,
-                np.log1p(metadata.cardinality)
+                np.log1p(metadata.unique_values or 0)
             ]
         
         # Ensure we have exactly the right number of features

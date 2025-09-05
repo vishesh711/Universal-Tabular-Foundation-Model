@@ -59,12 +59,28 @@ class MultiHeadAttention(nn.Module):
         
         # Apply attention mask if provided
         if attention_mask is not None:
-            # Expand mask for multi-head attention
-            mask = attention_mask.unsqueeze(1).unsqueeze(1)  # [batch_size, 1, 1, seq_len]
-            mask = mask.expand(batch_size, self.n_heads, seq_len, seq_len)
+            # Create causal mask: [batch_size, seq_len] -> [batch_size, seq_len, seq_len]
+            mask = attention_mask.unsqueeze(1) & attention_mask.unsqueeze(2)
+            # Expand for multi-head attention: [batch_size, 1, seq_len, seq_len]
+            mask = mask.unsqueeze(1)
             scores = scores.masked_fill(~mask, float('-inf'))
         
         attention_weights = F.softmax(scores, dim=-1)
+        
+        # Handle NaN values that can occur when all values are masked
+        if attention_mask is not None:
+            # Zero out attention weights where the query is masked
+            query_mask = attention_mask.unsqueeze(1).unsqueeze(-1)  # [batch_size, 1, seq_len, 1]
+            attention_weights = attention_weights * query_mask.float()
+            
+            # Normalize attention weights to sum to 1 for valid queries
+            attention_sum = attention_weights.sum(dim=-1, keepdim=True)
+            attention_weights = torch.where(
+                attention_sum > 0,
+                attention_weights / (attention_sum + 1e-8),
+                attention_weights
+            )
+        
         attention_weights = self.dropout(attention_weights)
         
         # Apply attention to values
@@ -343,14 +359,27 @@ class RowEncoder(nn.Module):
         outputs = self.forward(feature_embeddings, attention_mask)
         attention_weights = outputs['attention_weights']
         
-        # Average attention weights across all layers and heads
-        all_attention = torch.stack(attention_weights, dim=0)  # [n_layers, batch_size, n_heads, seq_len, seq_len]
-        avg_attention = all_attention.mean(dim=(0, 2))  # [batch_size, seq_len, seq_len]
+        if not attention_weights:
+            # Fallback: uniform importance if no attention weights
+            batch_size, n_features, _ = feature_embeddings.shape
+            return torch.ones(batch_size, n_features, device=feature_embeddings.device) / n_features
+        
+        # Average attention weights across all layers
+        # Each attention weight is [batch_size, seq_len, seq_len]
+        all_attention = torch.stack(attention_weights, dim=0)  # [n_layers, batch_size, seq_len, seq_len]
+        avg_attention = all_attention.mean(dim=0)  # [batch_size, seq_len, seq_len]
         
         # Compute importance as average attention received by each position
         if self.pooling_strategy == 'cls':
             # For CLS pooling, use attention from CLS token to features
-            importance = avg_attention[:, 0, 1:]  # [batch_size, n_features]
+            # CLS token is at position 0, features start at position 1
+            if avg_attention.size(-1) > 1:
+                importance = avg_attention[:, 0, 1:]  # [batch_size, n_features]
+            else:
+                # Fallback if no features after CLS
+                batch_size = avg_attention.size(0)
+                n_features = feature_embeddings.size(1)
+                importance = torch.ones(batch_size, n_features, device=feature_embeddings.device) / n_features
         else:
             # For other pooling, use average attention received
             importance = avg_attention.mean(dim=1)  # [batch_size, seq_len]

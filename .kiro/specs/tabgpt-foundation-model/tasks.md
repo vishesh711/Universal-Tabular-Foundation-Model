@@ -52,21 +52,21 @@
   - Write tests for column masking patterns and prediction accuracy
   - _Requirements: 3.2_
 
-- [-] 8. Implement Contrastive Row Learning
+- [x] 8. Implement Contrastive Row Learning
   - Create data augmentation strategies: noise injection, feature dropout, value perturbation
   - Implement InfoNCE loss with temperature scaling for contrastive learning
   - Add positive/negative pair generation for same-row augmentations
   - Write tests for augmentation consistency and contrastive loss computation
   - _Requirements: 3.3_
 
-- [ ] 9. Add Next Row Prediction for temporal data
+- [x] 9. Add Next Row Prediction for temporal data
   - Implement autoregressive prediction mechanism for time-series tables
   - Create temporal ordering validation and sequence preparation
   - Add causal attention masking for future information prevention
   - Write tests for temporal sequence handling and prediction accuracy
   - _Requirements: 3.4_
 
-- [ ] 10. Create comprehensive data loading and preprocessing pipeline
+- [x] 10. Create comprehensive data loading and preprocessing pipeline
   - Implement efficient data loaders for large tabular datasets
   - Add support for OpenML, UCI, and Kaggle dataset formats
   - Create preprocessing utilities for schema normalization and validation
@@ -74,7 +74,7 @@
   - Write tests for data loading performance and format compatibility
   - _Requirements: 8.1, 6.4_
 
-- [ ] 11. Build task-specific heads for downstream applications
+- [x] 11. Build task-specific heads for downstream applications
   - Implement classification head with support for binary and multi-class tasks
   - Create regression head for continuous value prediction
   - Add anomaly detection head with reconstruction-based scoring
@@ -82,7 +82,7 @@
   - Write tests for each task head's output dimensions and loss functions
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 12. Integrate HuggingFace-compatible interfaces
+- [x] 12. Integrate HuggingFace-compatible interfaces
   - Create TabGPTConfig class following HuggingFace configuration patterns
   - Implement TabGPTModel base class with from_pretrained and save_pretrained methods
   - Add task-specific model classes (TabGPTForClassification, TabGPTForRegression)
@@ -90,7 +90,7 @@
   - Write tests for model loading, saving, and HuggingFace Hub integration
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 13. Implement training pipeline with multiple objectives
+- [x] 13. Implement training pipeline with multiple objectives
   - Create multi-objective loss combination with configurable weights
   - Add gradient clipping and learning rate scheduling
   - Implement mixed precision training for memory efficiency
@@ -98,7 +98,7 @@
   - Write tests for training loop stability and convergence
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 14. Add fine-tuning utilities and adapter support
+- [-] 14. Add fine-tuning utilities and adapter support
   - Implement LoRA/PEFT adapters for efficient fine-tuning
   - Create fine-tuning scripts with HuggingFace Trainer integration
   - Add task-specific data preprocessing for downstream applications

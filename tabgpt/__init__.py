@@ -8,19 +8,17 @@ and survival analysis.
 
 __version__ = "0.1.0"
 
-from .models import TabGPTModel, TabGPTForClassification, TabGPTForRegression
-from .tokenizers import TabularTokenizer
+from .models import TabGPTModel, TabGPTForSequenceClassification, TabGPTForRegression, TabGPTConfig
+from .tokenizers import TabularTokenizer, TabGPTTokenizer
 from .encoders import ColumnEncoder, SemanticColumnEncoder
-from .config import TabGPTConfig
-from .training import MaskedCellModelingObjective
 
 __all__ = [
     "TabGPTModel",
-    "TabGPTForClassification", 
+    "TabGPTForSequenceClassification", 
     "TabGPTForRegression",
+    "TabGPTConfig",
     "TabularTokenizer",
+    "TabGPTTokenizer",
     "ColumnEncoder",
     "SemanticColumnEncoder",
-    "TabGPTConfig",
-    "MaskedCellModelingObjective",
 ]

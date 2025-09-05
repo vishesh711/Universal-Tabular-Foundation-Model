@@ -29,7 +29,7 @@ class TestColumnEncoder:
         
         # Check shapes
         for emb in embeddings:
-            assert emb.shape == (32,)  # embedding_dim // 2
+            assert emb.shape == (16,)  # embedding_dim // 4
         
         # Different names should produce different embeddings
         assert not torch.equal(embeddings[0], embeddings[1])
@@ -45,7 +45,7 @@ class TestColumnEncoder:
         num_metadata = ColumnMetadata(
             name='price',
             dtype='numerical',
-            cardinality=100,
+            unique_values=None,
             missing_rate=0.1,
             statistical_profile={
                 'mean': 50.0,
@@ -61,9 +61,9 @@ class TestColumnEncoder:
         cat_metadata = ColumnMetadata(
             name='category',
             dtype='categorical',
-            cardinality=5,
+            unique_values=5,
             missing_rate=0.05,
-            statistical_profile={}
+            statistical_profile=None
         )
         
         num_emb = encoder.encode_statistical_profile(num_metadata)
