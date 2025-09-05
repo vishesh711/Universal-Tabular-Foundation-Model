@@ -164,6 +164,10 @@ class ContrastiveAugmentation:
         perturbation = torch.randn_like(augmented) * self.perturbation_std
         augmented = augmented + perturbation
         
+        # Zero out invalid positions according to attention mask
+        attention_mask_expanded = attention_mask.unsqueeze(-1).expand_as(augmented)
+        augmented = augmented * attention_mask_expanded.float()
+        
         return augmented
     
     def create_positive_pairs(

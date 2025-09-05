@@ -13,9 +13,9 @@ class ColumnMetadata:
     """Metadata for a single column."""
     name: str
     dtype: str  # 'categorical', 'numerical', 'datetime', 'boolean'
-    cardinality: int
-    missing_rate: float
-    statistical_profile: Dict[str, float]
+    unique_values: Optional[int]  # Number of unique values, None for numerical
+    missing_rate: float = 0.0
+    statistical_profile: Optional[Dict[str, float]] = None
 
 
 @dataclass
@@ -80,6 +80,9 @@ class TabularTokenizer:
         Returns:
             Self for method chaining
         """
+        if dataframe.empty:
+            raise ValueError("Cannot fit tokenizer on empty DataFrame")
+        
         self.feature_names = list(dataframe.columns)
         self.column_metadata = []
         self.encoders = {}
@@ -154,10 +157,10 @@ class TabularTokenizer:
             dtype = 'categorical'
         
         # Compute statistics
-        cardinality = series.nunique()
+        unique_values = series.nunique() if dtype in ['categorical', 'boolean'] else None
         missing_rate = series.isnull().mean()
         
-        statistical_profile = {}
+        statistical_profile = None
         if dtype == 'numerical':
             statistical_profile = {
                 'mean': float(series.mean()) if not series.empty else 0.0,
@@ -171,7 +174,7 @@ class TabularTokenizer:
         return ColumnMetadata(
             name=name,
             dtype=dtype,
-            cardinality=cardinality,
+            unique_values=unique_values,
             missing_rate=missing_rate,
             statistical_profile=statistical_profile
         )

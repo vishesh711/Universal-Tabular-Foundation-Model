@@ -74,12 +74,23 @@ class CrossAttentionLayer(nn.Module):
         
         # Apply attention mask if provided
         if attention_mask is not None:
-            # Expand mask for multi-head attention
-            mask = attention_mask.unsqueeze(1)  # [batch_size, 1, seq_len_q, seq_len_k]
+            # Expand mask for multi-head attention if needed
+            if attention_mask.dim() == 3:  # [batch_size, seq_len_q, seq_len_k]
+                mask = attention_mask.unsqueeze(1)  # [batch_size, 1, seq_len_q, seq_len_k]
+            else:  # Already has the right dimensions
+                mask = attention_mask
             scores = scores.masked_fill(~mask, float('-inf'))
         
         # Apply softmax and dropout
         attention_weights = F.softmax(scores, dim=-1)
+        
+        # Handle NaN values that can occur when all values are masked
+        attention_weights = torch.where(
+            torch.isnan(attention_weights),
+            torch.zeros_like(attention_weights),
+            attention_weights
+        )
+        
         attention_weights = self.dropout(attention_weights)
         
         # Apply attention to values
@@ -128,12 +139,17 @@ class CrossAttentionLayer(nn.Module):
         row_to_col_mask = None
         if row_attention_mask is not None and column_attention_mask is not None:
             # [batch_size, n_features] x [n_features] -> [batch_size, n_features, n_features]
-            row_to_col_mask = row_attention_mask.unsqueeze(-1) & column_attention_mask.unsqueeze(0).unsqueeze(0)
+            row_to_col_mask = row_attention_mask.unsqueeze(-1) & column_attention_mask.unsqueeze(0)
         
         # Compute row-to-column attention
         row_attended, row_to_col_weights = self._compute_attention(
             row_q, col_k, col_v, row_to_col_mask
         )
+        
+        # Debug: Check shapes before reshape
+        # print(f"DEBUG: row_attended shape before transpose: {row_attended.shape}")
+        # print(f"DEBUG: row_attended numel: {row_attended.numel()}")
+        # print(f"DEBUG: expected shape: [{batch_size}, {n_features}, {self.d_model}]")
         
         # Reshape back
         row_attended = row_attended.transpose(1, 2).contiguous().view(
@@ -157,7 +173,7 @@ class CrossAttentionLayer(nn.Module):
         col_to_row_mask = None
         if row_attention_mask is not None and column_attention_mask is not None:
             # [n_features] x [batch_size, n_features] -> [batch_size, n_features, n_features]
-            col_to_row_mask = column_attention_mask.unsqueeze(0).unsqueeze(-1) & row_attention_mask.unsqueeze(1)
+            col_to_row_mask = column_attention_mask.unsqueeze(0).unsqueeze(0) & row_attention_mask.unsqueeze(-1)
         
         # Compute column-to-row attention
         col_attended, col_to_row_weights = self._compute_attention(

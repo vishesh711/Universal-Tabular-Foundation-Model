@@ -1,16 +1,21 @@
-"""TabGPT model implementations."""
+"""TabGPT models module."""
 
-from .base import TabGPTModel
-from .classification import TabGPTForClassification
-from .regression import TabGPTForRegression
-from .row_encoder import RowEncoder
-from .cross_attention import CrossAttentionFusion, CrossAttentionLayer
+from .configuration_tabgpt import TabGPTConfig
+from .modeling_tabgpt import (
+    TabGPTPreTrainedModel,
+    TabGPTModel,
+    TabGPTForSequenceClassification,
+    TabGPTForRegression,
+    TabGPTForPreTraining
+)
+from .base import TabGPTModel as BaseTabGPTModel
 
 __all__ = [
+    "TabGPTConfig",
+    "TabGPTPreTrainedModel", 
     "TabGPTModel",
-    "TabGPTForClassification", 
+    "TabGPTForSequenceClassification",
     "TabGPTForRegression",
-    "RowEncoder",
-    "CrossAttentionFusion",
-    "CrossAttentionLayer",
+    "TabGPTForPreTraining",
+    "BaseTabGPTModel"
 ]
