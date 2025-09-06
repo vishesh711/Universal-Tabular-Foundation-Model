@@ -98,7 +98,7 @@
   - Write tests for training loop stability and convergence
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [-] 14. Add fine-tuning utilities and adapter support
+- [x] 14. Add fine-tuning utilities and adapter support
   - Implement LoRA/PEFT adapters for efficient fine-tuning
   - Create fine-tuning scripts with HuggingFace Trainer integration
   - Add task-specific data preprocessing for downstream applications
