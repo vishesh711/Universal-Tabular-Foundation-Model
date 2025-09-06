@@ -3,7 +3,8 @@
 import pandas as pd
 import numpy as np
 import torch
-from tabgpt import TabGPTModel, TabGPTForClassification, TabularTokenizer, TabGPTConfig
+#from tabgpt import TabGPTModel, TabGPTForClassification, TabularTokenizer, TabGPTConfig
+from tabgpt import TabGPTModel, TabGPTForSequenceClassification, TabularTokenizer, TabGPTConfig
 
 def test_tabgpt_with_cross_attention():
     """Test complete TabGPT model with cross-attention fusion."""
@@ -99,8 +100,9 @@ def test_tabgpt_with_cross_attention():
     
     # Step 3: Test classification model with cross-attention
     print("\n=== Step 3: Testing Classification with Cross-Attention ===")
-    classification_model = TabGPTForClassification(config, num_labels=3)
-    
+    #classification_model = TabGPTForClassification(config, num_labels=3)
+    classification_model = TabGPTForSequenceClassification(config, num_labels=3)
+
     # Create dummy labels
     labels = torch.randint(0, 3, (len(df),))
     

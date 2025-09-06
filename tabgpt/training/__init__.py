@@ -60,6 +60,29 @@ from .metrics import (
     MetricsComputer,
     compute_model_metrics
 )
+from .distributed import (
+    DistributedConfig,
+    DistributedManager,
+    DataSharding,
+    GradientSynchronization,
+    ModelParallelism,
+    DistributedTrainer,
+    setup_distributed_training,
+    launch_distributed_training,
+    get_world_size,
+    get_rank,
+    get_local_rank,
+    is_main_process,
+    barrier,
+    cleanup_distributed
+)
+from .distributed_monitoring import (
+    DistributedMetrics,
+    ResourceMonitor,
+    CommunicationProfiler,
+    DistributedLogger,
+    DistributedTrainingMonitor
+)
 
 __all__ = [
     "MaskedCellModelingObjective",
@@ -108,4 +131,25 @@ __all__ = [
     "compute_num_parameters",
     "MetricsComputer",
     "compute_model_metrics",
+    # Distributed training
+    "DistributedConfig",
+    "DistributedManager",
+    "DataSharding",
+    "GradientSynchronization",
+    "ModelParallelism",
+    "DistributedTrainer",
+    "setup_distributed_training",
+    "launch_distributed_training",
+    "get_world_size",
+    "get_rank",
+    "get_local_rank",
+    "is_main_process",
+    "barrier",
+    "cleanup_distributed",
+    # Distributed monitoring
+    "DistributedMetrics",
+    "ResourceMonitor",
+    "CommunicationProfiler",
+    "DistributedLogger",
+    "DistributedTrainingMonitor",
 ]
